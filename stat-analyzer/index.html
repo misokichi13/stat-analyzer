@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>アンケートクロス集計・自動統計検定ツール</title>
+
+  <!-- ライブラリ -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jstat@1.9.6/dist/jstat.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+  <style>
+    :root {
+      --primary: #2563eb;
+      --secondary: #64748b;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --warning-bg: #fff7ed;
+      --warning-border: #fdba74;
+      --card-bg: #ffffff;
+      --page-bg: #f1f5f9;
+      --border: #cbd5e1;
+      --text: #1e293b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      background: var(--page-bg);
+      color: var(--text);
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "Noto Sans JP",
+        sans-serif;
+      line-height: 1.6;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin-top: 0;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .select-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 15px;
+    }
+
+    .select-group label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+   select,
+    input[type="file"],
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #fff;
+      font-size: 15px;
+}
+
+    button {
+      border: none;
+      border-radius: 6px;
+      padding: 10px 16px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-secondary {
+      background: var(--secondary);
+      color: #fff;
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+      margin-top: 15px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+    }
+
+    th,
+    td {
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    th {
+      background: #f8fafc;
+      font-weight: bold;
+    }
+
+    .alert-box {
+      padding: 12px 15px;
+      margin-bottom: 15px;
+      border: 1px solid var(--warning-border);
+      border-radius: 6px;
+      background: var(--warning-bg);
+    }
+
+    .stats-summary {
+      margin-top: 20px;
+      padding: 15px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #f8fafc;
+    }
+
+    .stats-list {
+      display: flex;
+      gap: 25px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .stats-list span {
+      font-weight: bold;
+    }
+
+    .interpretation-box {
+      margin-top: 10px;
+      padding: 10px;
+      background: #fff;
+      border-radius: 5px;
+    }
+
+    .stock-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #e2e8f0;
+      color: #334155;
+      font-size: 13px;
+    }
+
+    .output-target-card {
+      position: relative;
+      margin-bottom: 20px;
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .output-target-card h3 {
+      margin-bottom: 10px;
+    }
+
+    .delete-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: var(--danger);
+      color: #fff;
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+
+    .chart-container {
+      height: 320px;
+      width: 100%;
+      margin-top: 15px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .info-text {
+      color: #475569;
+      font-size: 14px;
+    }
+
+    .report-title-input {
+  margin: 15px 0;
+}
+
+.report-title-input label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.print-report-title {
+  display: none;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.print-report-title h1 {
+  font-size: 24px;
+  margin-bottom: 5px;
+}
+
+.print-report-title p {
+  font-size: 16px;
+  margin: 0;
+  color: #475569;
+}
+
+    @media (max-width: 700px) {
+      .select-group {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* 印刷用 */
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+      }
+
+      .no-print,
+      #fileSection,
+      #analysisControls,
+      #crossResults,
+      #printActionBar {
+        display: none !important;
+      }
+
+      .card {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+        margin-bottom: 30px;
+      }
+
+      #simpleResults {
+        display: block !important;
+      }
+
+      .print-report-title {
+        display: block !important;
+      }
+
+      .output-target-card {
+        page-break-inside: avoid;
+        border: none;
+        padding: 0;
+        margin-bottom: 40px;
+      }
+
+      .delete-btn {
+        display: none !important;
+      }
+
+      table {
+        page-break-inside: avoid;
+      }
+
+      .chart-container {
+        page-break-inside: avoid;
+      }
+    }
+
+    /* 「単純集計のみ印刷」のため */
+    body.print-simple-only #outputTargetsSection {
+      display: none !important;
+    }
+
+    body.print-simple-only #printActionBar,
+    body.print-simple-only #analysisControls,
+    body.print-simple-only #crossResults {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+   <div class="print-report-title">
+    <h1 id="printReportTitle">アンケート分析レポート</h1>
+    <p>アンケートクロス集計・自動統計検定ツール</p>
+  </div>
+
+  <div class="container">
+
+   <header class="card">
+  <h1>アンケートクロス集計・自動統計検定ツール</h1>
+
+  <div class="report-title-input">
+    <label for="reportTitleInput">レポート名</label>
+    <input
+      type="text"
+      id="reportTitleInput"
+      placeholder="例：令和8年度 ○○講座 アンケート分析"
+    >
+  </div>
+
+  <p class="info-text">
+    CSVファイルを読み込み、単純集計を行います。
+    必要なクロス集計を選択すると、単純集計とあわせてレポート出力できます。
+  </p>
+</header>
+
+    <!-- 1. CSVファイル -->
+    <section id="fileSection" class="card no-print">
+  <section class="card">
+  <h2>AI分析設定</h2>
+
+  <div class="form-group">
+    <label for="geminiApiKey">Gemini APIキー</label>
+
+    <input
+      type="password"
+      id="geminiApiKey"
+      placeholder="Gemini APIキーを入力してください"
+      autocomplete="off"
+    >
+
+    <p class="help-text">
+      APIキーを入力すると、AI分析を実行できます。
+    </p>
+
+    <button
+      id="runAIAnalysisBtn"
+      type="button"
+      disabled
+    >
+      AI分析を実行
+    </button>
+  </div>
+</section>
+      <h2>1. CSVファイルの選択</h2>
+
+      <input type="file" id="csvFileInput" accept=".csv">
+
+      <div id="fileInfo" class="info-text hidden" style="margin-top: 10px;"></div>
+    </section>
+
+    <!-- レポート出力操作 -->
+    <section id="printActionBar" class="card hidden no-print">
+      <div class="section-header">
+        <div>
+          <strong>📋 レポート出力</strong>
+          <span id="stockCountBadge" class="stock-badge">出力対象: 0 件</span>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button id="printSimpleFromReportBtn" class="btn-secondary">
+          🖨️ 単純集計のみ出力
+        </button>
+
+        <button id="printAllBtn" class="btn-success">
+          🖨️ 分析結果を印刷 / PDF出力
+        </button>
+        </div>
+
+      <p class="info-text">
+        最終出力には、単純集計と「出力対象」に追加したクロス集計が含まれます。
+      </p>
+    </section>
+
+    <!-- 2. クロス集計項目 -->
+    <section id="analysisControls" class="card hidden no-print">
+      <h2>2. クロス集計の項目選択</h2>
+
+      <div class="select-group">
+        <div>
+          <label for="rowSelect">行項目</label>
+          <select id="rowSelect"></select>
+        </div>
+
+        <div>
+          <label for="colSelect">列項目</label>
+          <select id="colSelect"></select>
+        </div>
+      </div>
+
+      <button id="runAnalysisBtn" class="btn-primary">
+        クロス集計を実行
+      </button>
+    </section>
+
+    <!-- 3. 単純集計 -->
+    <section id="simpleResults" class="card hidden">
+      <div class="section-header">
+        <h2>3. 単純集計結果</h2>
+
+        <button id="printSimpleBtn" class="btn-secondary no-print">
+          🖨️ 単純集計のみを印刷
+        </button>
+      </div>
+
+      <div id="simpleTablesContainer"></div>
+    </section>
+
+    <!-- 4. クロス集計プレビュー -->
+    <section id="crossResults" class="card hidden no-print">
+      <div class="section-header">
+        <h2>4. クロス集計プレビュー</h2>
+
+        <button id="addOutputTargetBtn" class="btn-primary">
+          📌 このクロス集計を出力対象に追加
+        </button>
+      </div>
+
+      <div id="alertBox" class="alert-box hidden"></div>
+
+      <div id="crossTableContainer" class="table-wrapper"></div>
+
+      <div class="stats-summary">
+        <div class="stats-list">
+          <span>カイ二乗値: <span id="statChi2">-</span></span>
+          <span>自由度: <span id="statDf">-</span></span>
+          <span>p値: <span id="statPValue">-</span></span>
+        </div>
+
+        <div id="statInterpretation" class="interpretation-box"></div>
+      </div>
+
+      <div class="chart-container">
+        <canvas id="crossChart"></canvas>
+      </div>
+    </section>
+
+    <!-- 5. 出力対象 -->
+    <section id="outputTargetsSection" class="card hidden">
+      <div class="section-header">
+      <div>
+      <h2>5. 出力対象のクロス集計</h2>
+
+      <span id="outputTargetCount" class="stock-badge">
+        0 件
+      </span>
+      </div>
+
+    <button
+      id="newCrossAnalysisBtn"
+      class="btn-primary no-print">
+      ＋ 新しいクロス集計を作成
+    </button>
+    </div>
+
+      <p class="info-text no-print">
+        ここに追加したクロス集計が、最終レポートに含まれます。
+      </p>
+
+    <div id="outputTargetsContainer"></div>
+    </section>
+
+  </div>
+
+  <!-- JavaScript -->
+  <script src="js/stats.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

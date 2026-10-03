@@ -1,0 +1,246 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.6;
+  background-color: #f4f6f8;
+  color: #333;
+  padding: 20px;
+}
+
+header {
+  background: #2c3e50;
+  color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+header h1 {
+  font-size: 1.5rem;
+  margin-bottom: 5px;
+}
+
+.badge {
+  font-size: 0.8rem;
+  background: #3498db;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  margin-bottom: 20px;
+}
+
+h2 {
+  font-size: 1.2rem;
+  border-bottom: 2px solid #ecf0f1;
+  padding-bottom: 8px;
+  margin-bottom: 15px;
+  color: #2c3e50;
+}
+
+h3 {
+  font-size: 1rem;
+  margin: 15px 0 10px 0;
+  color: #34495e;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.file-upload {
+  border: 2px dashed #cbd5e1;
+  padding: 30px;
+  text-align: center;
+  border-radius: 6px;
+  background: #f8fafc;
+}
+
+.help-text {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-top: 8px;
+}
+
+.file-info {
+  margin-top: 15px;
+  padding: 10px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.control-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 15px;
+}
+
+.control-group label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+}
+
+select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.btn-primary {
+  background: #27ae60;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.btn-primary:hover {
+  background: #219150;
+}
+
+/* テーブルスタイル */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+}
+
+th, td {
+  border: 1px solid #cbd5e1;
+  padding: 8px 12px;
+  text-align: right;
+}
+
+th {
+  background-color: #f1f5f9;
+  font-weight: bold;
+  text-align: center;
+}
+
+td:first-child, th:first-child {
+  text-align: left;
+}
+
+.tables-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.alert-box {
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+  color: #856404;
+  padding: 12px 15px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+}
+
+.stats-table th {
+  width: 25%;
+}
+
+.interpretation-box {
+  background: #f8fafc;
+  border-left: 4px solid #3b82f6;
+  padding: 15px;
+  margin-top: 15px;
+}
+
+.disclaimer {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-top: 10px;
+}
+/* ==========================================
+   印刷（PDF出力）用スタイル
+   ========================================== */
+@media print {
+  /* 1. 印刷に不要な操作系UIを非表示 */
+  #csvFileInput,
+  #fileInfo,
+  #analysisControls,
+  #printControls,
+  .btn,
+  button,
+  input,
+  select {
+    display: none !important;
+  }
+
+  /* 2. 背景色や文字色の保持 */
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 12pt;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* 3. コンテナの余白調整 */
+  .container, .table-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* 4. 改ページ・ページ分割の制御 (表やグラフが途中で切れないようにする) */
+  .table-wrapper, 
+  #crossTableContainer, 
+  #crossChartContainer,
+  #statResults {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin-bottom: 20px;
+  }
+
+  h2, h3 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  /* 5. グラフキャンバスの印刷表示最適化 */
+  canvas {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  /* 6. テーブルの印刷用罫線補正 */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+  th, td {
+    border: 1px solid #94a3b8 !important;
+    padding: 6px 8px !important;
+    font-size: 10pt;
+  }
+  th {
+    background-color: #f1f5f9 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
