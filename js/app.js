@@ -997,8 +997,12 @@ function renderCrossAnalysis(rowCol, colCol) {
 
   if (interp) {
 
-    if (
-      typeof res.rawPValue === "number" &&
+    if (typeof res.rawPValue !== "number") {
+
+      interp.innerHTML =
+        `カイ二乗検定のp値は計算できませんでした（統計ライブラリを読み込めなかったか、カテゴリが1種類のみのため）。割合の傾向はクロス表から確認してください。`;
+
+    } else if (
       res.rawPValue < 0.05
     ) {
 
@@ -1341,15 +1345,19 @@ function updateOutputTargetsUI() {
         </div>
 
         ${
-          item.res.rawPValue < 0.05
+          typeof item.res.rawPValue !== "number"
             ? `<div class="interpretation-box">
-                 <strong>
-                   5%水準で統計的に有意な関連が確認されました
-                 </strong>
+                 カイ二乗検定のp値は計算できませんでした
                </div>`
-            : `<div class="interpretation-box">
-                 今回のデータから、5%水準で統計的に有意な関連は確認されませんでした
-               </div>`
+            : item.res.rawPValue < 0.05
+              ? `<div class="interpretation-box">
+                   <strong>
+                     5%水準で統計的に有意な関連が確認されました
+                   </strong>
+                 </div>`
+              : `<div class="interpretation-box">
+                   今回のデータから、5%水準で統計的に有意な関連は確認されませんでした
+                 </div>`
         }
       </div>
 

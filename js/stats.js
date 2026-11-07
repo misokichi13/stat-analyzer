@@ -113,8 +113,12 @@ function calculateCrosstabAndChiSquare(data, rowCol, colCol, isMA = false) {
   });
 
   const df = (rowCats.length - 1) * (colCats.length - 1);
-  let pValue = 0;
-  if (df > 0 && typeof jStat !== 'undefined') {
+  // jStat（CDN）が読み込めていない場合や自由度0の場合は、p値を計算できない。
+  // その場合は null を返し、画面側で「検定できませんでした」と表示する。
+  // （以前は初期値0のまま返るため、「p < 0.001（有意）」と誤表示される恐れがあった）
+  const chiSquareAvailable = df > 0 && typeof jStat !== 'undefined';
+  let pValue = null;
+  if (chiSquareAvailable) {
     pValue = 1 - jStat.chisquare.cdf(chi2, df);
   }
 
@@ -122,8 +126,9 @@ function calculateCrosstabAndChiSquare(data, rowCol, colCol, isMA = false) {
     rowCats, colCats, observed, expected, rowTotals, colTotals, validN,
     chi2: chi2.toFixed(3),
     df: df,
-    pValue: pValue < 0.001 ? "< 0.001" : pValue.toFixed(4),
+    pValue: pValue === null ? null : (pValue < 0.001 ? "< 0.001" : pValue.toFixed(4)),
     rawPValue: pValue,
+    chiSquareAvailable,
     smallExpectedCount,
     totalCells,
     smallExpectedRatio: (smallExpectedCount / totalCells) * 100,
